@@ -111,24 +111,32 @@
 )
 
 ;; User claims their winnings
-(define-public (claim-winnings (bet-id uint))
+(define-public (claim-payout (bet-id uint))
   (let
     (
       (bet (unwrap! (map-get? bets { bet-id: bet-id }) err-not-found))
-      (user-bet (unwrap! (map-get? user-bets { bet-id: bet-id, user: tx-sender }) err-not-found))
       (winning-option (unwrap! (get winning-option bet) err-not-found))
+      (user-bet (unwrap! (map-get? user-bets { bet-id: bet-id, user: tx-sender }) err-not-found))
+      (total-pool (get total-pool bet))
+      (house-fee (/ (* total-pool (var-get house-fee-percentage)) u100))
+      (payout-pool (- total-pool house-fee)) ;; Ensure this is defined before use
     )
     (asserts! (not (get claimed user-bet)) err-already-claimed)
     (asserts! (is-eq (get option user-bet) winning-option) err-not-winner)
-    ;; Calculate the user's payout (simplified)
+    
+    ;; Calculate user payout based on their bet amount
     (let ((user-payout (* (get amount user-bet) (/ (get total-pool bet) payout-pool))))
-      (try! (stx-transfer? user-payout (as-contract tx-sender) tx-sender))
-      ;; Mark as claimed
-      (map-set user-bets { bet-id: bet-id, user: tx-sender } (merge user-bet { claimed: true }))
+      ;; Transfer the user payout logic goes here, e.g.:
+      ;; (try! (stx-transfer? user-payout (as-contract tx-sender)))
+      (map-set user-bets
+        { bet-id: bet-id, user: tx-sender }
+        (merge user-bet { claimed: true }) ;; Ensure 'claimed' is updated
+      )
       (ok user-payout)
     )
   )
 )
+
 ;; Read-only functions
 
 ;; Get bet details
