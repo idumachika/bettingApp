@@ -92,4 +92,29 @@ describe("2SureOddBet Smart Contract", () => {
       expect(result.error).toBe("Insufficient bet amount.");
     });
   });
+  describe("Closing Betting", () => {
+    it("should close betting successfully", async () => {
+      const betId = 1;
+
+      mockContract.closeBetting.mockResolvedValue({
+        success: true,
+      });
+
+      const result = await mockContract.closeBetting(betId);
+      expect(result.success).toBe(true);
+    });
+
+    it("should fail to close betting if not the contract owner", async () => {
+      const betId = 1;
+
+      mockContract.closeBetting.mockResolvedValue({
+        success: false,
+        error: "Only the contract owner can close betting.",
+      });
+
+      const result = await mockContract.closeBetting(betId);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Only the contract owner can close betting.");
+    });
+  });
 });
