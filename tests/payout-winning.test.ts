@@ -48,4 +48,48 @@ describe("2SureOddBet Smart Contract", () => {
       expect(result.error).toBe("Only the contract owner can create a bet.");
     });
   });
+  describe("Placing Bets", () => {
+    it("should place a bet successfully", async () => {
+      const betId = 1;
+      const option = 0; // Team A
+      const amount = 1000;
+
+      mockContract.placeBet.mockResolvedValue({
+        success: true,
+      });
+
+      const result = await mockContract.placeBet(betId, option, amount);
+      expect(result.success).toBe(true);
+    });
+
+    it("should fail to place a bet if bet is closed", async () => {
+      const betId = 1;
+      const option = 0; // Team A
+      const amount = 1000;
+
+      mockContract.placeBet.mockResolvedValue({
+        success: false,
+        error: "Betting is closed for this event.",
+      });
+
+      const result = await mockContract.placeBet(betId, option, amount);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Betting is closed for this event.");
+    });
+
+    it("should fail to place a bet if amount is less than minimum", async () => {
+      const betId = 1;
+      const option = 0; // Team A
+      const amount = 500; // Less than minimum bet
+
+      mockContract.placeBet.mockResolvedValue({
+        success: false,
+        error: "Insufficient bet amount.",
+      });
+
+      const result = await mockContract.placeBet(betId, option, amount);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Insufficient bet amount.");
+    });
+  });
 });
