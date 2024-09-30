@@ -6,10 +6,15 @@
 (define-constant err-not-found (err u101))
 (define-constant err-bet-closed (err u102))
 (define-constant err-insufficient-balance (err u103))
+(define-constant err-already-claimed (err u104)) 
+(define-constant err-not-winner (err u105))
+
 
 ;; Data Variables
 (define-data-var min-bet-amount uint u1000000) ;; 1 STX
 (define-data-var house-fee-percentage uint u5) ;; 5%
+(define-data-var last-bet-id uint u0) ;; Initialize the last bet ID
+
 
 ;; Data Maps
 (define-map bets 
@@ -26,13 +31,13 @@
 
 (define-map user-bets
   { bet-id: uint, user: principal }
-  { amount: uint, option: uint }
+  { amount: uint, option: uint , claimed: bool}
 )
 
 ;; Create a new bet
 (define-public (create-bet (event (string-ascii 100)) (options (list 2 (string-ascii 20))) (odds (list 2 uint)))
   (let
-    ((new-bet-id (+ (var-get last-bet-id) u1)))
+    ((new-bet-id (+ (var-get last-bet-id) u1))) ;; Retrieve last-bet-id and increment by 1
     (asserts! (is-eq tx-sender contract-owner) err-owner-only)
     (map-set bets
       { bet-id: new-bet-id }
@@ -45,7 +50,7 @@
         is-active: true
       }
     )
-    (var-set last-bet-id new-bet-id)
+    (var-set last-bet-id new-bet-id) ;; Update the last-bet-id
     (ok new-bet-id)
   )
 )
@@ -64,11 +69,12 @@
     )
     (map-set user-bets
       { bet-id: bet-id, user: tx-sender }
-      { amount: amount, option: option }
+      { amount: amount, option: option, claimed: false } ;; Include the claimed field
     )
     (ok true)
   )
 )
+
 (define-public (close-betting (bet-id uint))
   (let
     ((bet (unwrap! (map-get? bets { bet-id: bet-id }) err-not-found)))
