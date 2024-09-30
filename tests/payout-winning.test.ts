@@ -1,21 +1,19 @@
+import { describe, it, beforeEach, expect, vi } from "vitest";
 
-import { describe, expect, it } from "vitest";
+// Mock contract methods for 2SureOddBet
+const mockContract = {
+  createBet: vi.fn(),
+  placeBet: vi.fn(),
+  closeBetting: vi.fn(),
+  setWinnerAndPayout: vi.fn(),
+  claimPayout: vi.fn(),
+  getBetDetails: vi.fn(),
+  getUserBet: vi.fn(),
+};
 
-const accounts = simnet.getAccounts();
-const address1 = accounts.get("wallet_1")!;
-
-/*
-  The test below is an example. To learn more, read the testing documentation here:
-  https://docs.hiro.so/stacks/clarinet-js-sdk
-*/
-
-describe("example tests", () => {
-  it("ensures simnet is well initalised", () => {
-    expect(simnet.blockHeight).toBeDefined();
+describe("2SureOddBet Smart Contract", () => {
+  beforeEach(() => {
+    // Reset all mocks before each test
+    vi.resetAllMocks();
   });
-
-  // it("shows an example", () => {
-  //   const { result } = simnet.callReadOnlyFn("counter", "get-counter", [], address1);
-  //   expect(result).toBeUint(0);
-  // });
 });
