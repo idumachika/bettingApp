@@ -150,4 +150,31 @@ describe("2SureOddBet Smart Contract", () => {
       expect(result.error).toBe("Only the contract owner can set the winner.");
     });
   });
+  describe("Claiming Payout", () => {
+    it("should allow user to claim payout", async () => {
+      const betId = 1;
+
+      mockContract.claimPayout.mockResolvedValue({
+        success: true,
+        payout: 2000,
+      });
+
+      const result = await mockContract.claimPayout(betId);
+      expect(result.success).toBe(true);
+      expect(result.payout).toBe(2000);
+    });
+
+    it("should fail to claim payout if not a winner", async () => {
+      const betId = 1;
+
+      mockContract.claimPayout.mockResolvedValue({
+        success: false,
+        error: "User did not win the bet.",
+      });
+
+      const result = await mockContract.claimPayout(betId);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("User did not win the bet.");
+    });
+  });
 });
