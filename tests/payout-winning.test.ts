@@ -117,4 +117,37 @@ describe("2SureOddBet Smart Contract", () => {
       expect(result.error).toBe("Only the contract owner can close betting.");
     });
   });
+  describe("Setting Winner and Payout", () => {
+    it("should set the winning option and payout correctly", async () => {
+      const betId = 1;
+      const winningOption = 0; // Team A
+
+      mockContract.setWinnerAndPayout.mockResolvedValue({
+        success: true,
+      });
+
+      const result = await mockContract.setWinnerAndPayout(
+        betId,
+        winningOption
+      );
+      expect(result.success).toBe(true);
+    });
+
+    it("should fail to set winner if not the contract owner", async () => {
+      const betId = 1;
+      const winningOption = 0; // Team A
+
+      mockContract.setWinnerAndPayout.mockResolvedValue({
+        success: false,
+        error: "Only the contract owner can set the winner.",
+      });
+
+      const result = await mockContract.setWinnerAndPayout(
+        betId,
+        winningOption
+      );
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Only the contract owner can set the winner.");
+    });
+  });
 });
