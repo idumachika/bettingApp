@@ -177,4 +177,37 @@ describe("2SureOddBet Smart Contract", () => {
       expect(result.error).toBe("User did not win the bet.");
     });
   });
+  describe("Read-only functions", () => {
+    it("should get bet details successfully", async () => {
+      const betId = 1;
+      const mockBetDetails = {
+        event: "Football Match",
+        options: ["Team A", "Team B"],
+        odds: [200, 150],
+        totalPool: 10000,
+        winningOption: null,
+        isActive: true,
+      };
+
+      mockContract.getBetDetails.mockResolvedValue(mockBetDetails);
+
+      const result = await mockContract.getBetDetails(betId);
+      expect(result).toEqual(mockBetDetails);
+    });
+
+    it("should get user bet details successfully", async () => {
+      const betId = 1;
+      const user = "user1";
+      const mockUserBetDetails = {
+        amount: 1000,
+        option: 0,
+        claimed: false,
+      };
+
+      mockContract.getUserBet.mockResolvedValue(mockUserBetDetails);
+
+      const result = await mockContract.getUserBet(betId, user);
+      expect(result).toEqual(mockUserBetDetails);
+    });
+  });
 });
