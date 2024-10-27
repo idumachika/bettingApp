@@ -45,5 +45,23 @@
         (err "Unsupported currency")
     )
 )
+;; Function to withdraw currency
+(define-public (withdraw (amount uint) (currency uint))
+    (let ((current-balance (unwrap! (map-get? currency-balance tx-sender) (map)) 0)))
+        (if (>= current-balance amount)
+            (begin
+                ;; Update the user's balance
+                (map-set currency-balance tx-sender (map-set (unwrap! (map-get? currency-balance tx-sender) (map)) currency (- current-balance amount)))
+                (ok "Withdrawal successful"))
+            (err "Insufficient balance"))
+    )
+)
+
+;; Function to get user balance
+(define-read-only (get-balance (user principal) (currency uint))
+    (let ((balance (unwrap! (map-get? currency-balance user) (map)) 0)))
+        (ok balance)
+    )
+)
 
 
