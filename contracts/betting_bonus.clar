@@ -29,3 +29,15 @@
         )
     )
 )
+(define-public (reset-bonus (user principal))
+    (begin
+        (map-set bonuses user 0)
+        (ok "Bonus reset successfully"))
+)
+
+(define-read-only (is-bonus-eligible (user principal) (amount uint))
+    (if (>= amount MIN_BET_AMOUNT)
+        (ok true)
+        (ok false)
+    )
+)
