@@ -42,6 +42,13 @@
                 (err "Bet amount is less than minimum required to earn a bonus"))
         )
     )
+    (define-public (claim-promotion (user principal) (event-id uint))
+    (let ((bonus (map-get promotions event-id)))
+        (if (is-some bonus)
+            (add-bonus user (unwrap! bonus 0))  ;; Claim the bonus
+            (err "Promotion does not exist"))
+    )
+)
 
     (define-public (activate-promotion (event-id uint) (bonus-amount uint))
     (begin
