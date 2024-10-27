@@ -3,6 +3,7 @@
 ;; Define a constant for the minimum bet required to qualify for a bonus
 (define-constant MIN_BET_AMOUNT 100)
 (define-data-var promotions (map uint uint))
+(define-data-var referrals (map principal principal))  
 
 (define-public (add-bonus (user principal) (amount uint))
     (begin
@@ -71,4 +72,18 @@
     )
 )
 (define-data-var bonus-expiry (map principal uint))
+
+(define-public (add-referral (referrer principal) (referee principal))
+    (begin
+        (map-set referrals referrer referee)
+        (ok "Referral added successfully"))
+)
+
+(define-public (reward-referral (referee principal))
+    (let ((referrer (map-get referrals referee)))
+        (if (is-some referrer)
+            (add-bonus (unwrap! referrer tx-sender) 50)  ;; Reward the referrer
+            (err "No referrer found"))
+    )
+)
 
