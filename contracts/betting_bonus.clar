@@ -13,3 +13,19 @@
             (err "Bet amount is less than minimum required to earn a bonus"))
     )
 )
+
+(define-public (get-bonus (user principal))
+    (ok (var-get bonuses user))
+)
+
+(define-public (redeem-bonus (user principal) (amount uint))
+    (begin
+        (let ((current-bonus (var-get bonuses user)))
+            (if (>= current-bonus amount)
+                (begin
+                    (map-set bonuses user (- current-bonus amount))
+                    (ok "Bonus redeemed successfully"))
+                (err "Insufficient bonus balance"))
+        )
+    )
+)
