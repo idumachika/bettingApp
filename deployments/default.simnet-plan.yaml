@@ -53,5 +53,5 @@ plan:
             contract-name: payout-winning
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/payout-winning.clar
-            clarity-version: 2
-      epoch: "2.5"
+            clarity-version: 1
+      epoch: "2.05"

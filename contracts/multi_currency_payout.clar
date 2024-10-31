@@ -64,4 +64,12 @@
     )
 )
 
+;; Function to get bet details by ID
+(define-read-only (get-bet (bet-id uint))
+    (match (map-get? bets bet-id)
+        (some bet-details) (ok bet-details)
+        (none) (err "Bet not found")
+    )
+)
+
 
