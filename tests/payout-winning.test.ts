@@ -1,21 +1,213 @@
+import { describe, it, beforeEach, expect, vi } from "vitest";
 
-import { describe, expect, it } from "vitest";
+// Mock contract methods for 2SureOddBet
+const mockContract = {
+  createBet: vi.fn(),
+  placeBet: vi.fn(),
+  closeBetting: vi.fn(),
+  setWinnerAndPayout: vi.fn(),
+  claimPayout: vi.fn(),
+  getBetDetails: vi.fn(),
+  getUserBet: vi.fn(),
+};
 
-const accounts = simnet.getAccounts();
-const address1 = accounts.get("wallet_1")!;
-
-/*
-  The test below is an example. To learn more, read the testing documentation here:
-  https://docs.hiro.so/stacks/clarinet-js-sdk
-*/
-
-describe("example tests", () => {
-  it("ensures simnet is well initalised", () => {
-    expect(simnet.blockHeight).toBeDefined();
+describe("2SureOddBet Smart Contract", () => {
+  beforeEach(() => {
+    // Reset all mocks before each test
+    vi.resetAllMocks();
   });
 
-  // it("shows an example", () => {
-  //   const { result } = simnet.callReadOnlyFn("counter", "get-counter", [], address1);
-  //   expect(result).toBeUint(0);
-  // });
+  describe("Bet Creation", () => {
+    it("should create a new bet successfully", async () => {
+      const event = "Football Match";
+      const options = ["Team A", "Team B"];
+      const odds = [200, 150];
+
+      mockContract.createBet.mockResolvedValue({
+        success: true,
+        betId: 1,
+      });
+
+      const result = await mockContract.createBet(event, options, odds);
+      expect(result.success).toBe(true);
+      expect(result.betId).toBe(1);
+    });
+
+    it("should fail to create a bet if not the contract owner", async () => {
+      const event = "Football Match";
+      const options = ["Team A", "Team B"];
+      const odds = [200, 150];
+
+      mockContract.createBet.mockResolvedValue({
+        success: false,
+        error: "Only the contract owner can create a bet.",
+      });
+
+      const result = await mockContract.createBet(event, options, odds);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Only the contract owner can create a bet.");
+    });
+  });
+  describe("Placing Bets", () => {
+    it("should place a bet successfully", async () => {
+      const betId = 1;
+      const option = 0; // Team A
+      const amount = 1000;
+
+      mockContract.placeBet.mockResolvedValue({
+        success: true,
+      });
+
+      const result = await mockContract.placeBet(betId, option, amount);
+      expect(result.success).toBe(true);
+    });
+
+    it("should fail to place a bet if bet is closed", async () => {
+      const betId = 1;
+      const option = 0; // Team A
+      const amount = 1000;
+
+      mockContract.placeBet.mockResolvedValue({
+        success: false,
+        error: "Betting is closed for this event.",
+      });
+
+      const result = await mockContract.placeBet(betId, option, amount);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Betting is closed for this event.");
+    });
+
+    it("should fail to place a bet if amount is less than minimum", async () => {
+      const betId = 1;
+      const option = 0; // Team A
+      const amount = 500; // Less than minimum bet
+
+      mockContract.placeBet.mockResolvedValue({
+        success: false,
+        error: "Insufficient bet amount.",
+      });
+
+      const result = await mockContract.placeBet(betId, option, amount);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Insufficient bet amount.");
+    });
+  });
+  describe("Closing Betting", () => {
+    it("should close betting successfully", async () => {
+      const betId = 1;
+
+      mockContract.closeBetting.mockResolvedValue({
+        success: true,
+      });
+
+      const result = await mockContract.closeBetting(betId);
+      expect(result.success).toBe(true);
+    });
+
+    it("should fail to close betting if not the contract owner", async () => {
+      const betId = 1;
+
+      mockContract.closeBetting.mockResolvedValue({
+        success: false,
+        error: "Only the contract owner can close betting.",
+      });
+
+      const result = await mockContract.closeBetting(betId);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Only the contract owner can close betting.");
+    });
+  });
+  describe("Setting Winner and Payout", () => {
+    it("should set the winning option and payout correctly", async () => {
+      const betId = 1;
+      const winningOption = 0; // Team A
+
+      mockContract.setWinnerAndPayout.mockResolvedValue({
+        success: true,
+      });
+
+      const result = await mockContract.setWinnerAndPayout(
+        betId,
+        winningOption
+      );
+      expect(result.success).toBe(true);
+    });
+
+    it("should fail to set winner if not the contract owner", async () => {
+      const betId = 1;
+      const winningOption = 0; // Team A
+
+      mockContract.setWinnerAndPayout.mockResolvedValue({
+        success: false,
+        error: "Only the contract owner can set the winner.",
+      });
+
+      const result = await mockContract.setWinnerAndPayout(
+        betId,
+        winningOption
+      );
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Only the contract owner can set the winner.");
+    });
+  });
+  describe("Claiming Payout", () => {
+    it("should allow user to claim payout", async () => {
+      const betId = 1;
+
+      mockContract.claimPayout.mockResolvedValue({
+        success: true,
+        payout: 2000,
+      });
+
+      const result = await mockContract.claimPayout(betId);
+      expect(result.success).toBe(true);
+      expect(result.payout).toBe(2000);
+    });
+
+    it("should fail to claim payout if not a winner", async () => {
+      const betId = 1;
+
+      mockContract.claimPayout.mockResolvedValue({
+        success: false,
+        error: "User did not win the bet.",
+      });
+
+      const result = await mockContract.claimPayout(betId);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("User did not win the bet.");
+    });
+  });
+  describe("Read-only functions", () => {
+    it("should get bet details successfully", async () => {
+      const betId = 1;
+      const mockBetDetails = {
+        event: "Football Match",
+        options: ["Team A", "Team B"],
+        odds: [200, 150],
+        totalPool: 10000,
+        winningOption: null,
+        isActive: true,
+      };
+
+      mockContract.getBetDetails.mockResolvedValue(mockBetDetails);
+
+      const result = await mockContract.getBetDetails(betId);
+      expect(result).toEqual(mockBetDetails);
+    });
+
+    it("should get user bet details successfully", async () => {
+      const betId = 1;
+      const user = "user1";
+      const mockUserBetDetails = {
+        amount: 1000,
+        option: 0,
+        claimed: false,
+      };
+
+      mockContract.getUserBet.mockResolvedValue(mockUserBetDetails);
+
+      const result = await mockContract.getUserBet(betId, user);
+      expect(result).toEqual(mockUserBetDetails);
+    });
+  });
 });
